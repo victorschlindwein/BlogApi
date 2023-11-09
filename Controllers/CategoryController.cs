@@ -1,4 +1,5 @@
 ﻿using Blog.Data;
+using Blog.Extensions;
 using Blog.Models;
 using Blog.ViewModels;
 using Microsoft.AspNetCore.Mvc;
@@ -17,11 +18,11 @@ namespace Blog.Controllers
             {
                 var categories = await context.Categories.ToListAsync();
 
-                return Ok(categories);
+                return Ok(new ResultViewModel<List<Category>>(categories));
             }
-            catch (Exception ex)
+            catch
             {
-                return StatusCode(500, "Erro 05XE1: Falha interna no servidor");
+                return StatusCode(500, new ResultViewModel<List<Category>>("Erro 05XE1: Falha interna no servidor"));
             }
         }
 
@@ -35,13 +36,13 @@ namespace Blog.Controllers
                 var category = await context.Categories.FirstOrDefaultAsync(x => x.Id == id);
 
                 if (category == null)
-                    return NotFound();
+                    return NotFound(new ResultViewModel<Category>("Conteúdo não encontrado"));
 
-                return Ok(category);
+                return Ok(new ResultViewModel<Category>(category));
             }
-            catch (Exception ex)
+            catch
             {
-                return StatusCode(500, "Erro 05XE2: Falha interna no servidor");
+                return StatusCode(500, new ResultViewModel<List<Category>>("Erro 05XE2: Falha interna no servidor"));
             }
         }
 
@@ -50,6 +51,9 @@ namespace Blog.Controllers
             [FromBody] EditorCategoryViewModel model,
             [FromServices] BlogDataContext context)
         {
+            if(!ModelState.IsValid)
+                return BadRequest(new ResultViewModel<Category>(ModelState.GetErrors()));
+
             try
             {
                 var category = new Category
@@ -63,13 +67,13 @@ namespace Blog.Controllers
 
                 return Created($"v1/categories/{category.Id}", model);
             }
-            catch (DbUpdateException ex)
+            catch (DbUpdateException)
             {
-                return StatusCode(500, @"Erro 05XE1: Não foi possível incluir a categoria.");
+                return StatusCode(500, new ResultViewModel<List<Category>>("Erro 05XE1: Não foi possível incluir a categoria."));
             }
-            catch (Exception ex)
+            catch
             {
-                return StatusCode(500, "Erro 05XE3: Falha interna no servidor");
+                return StatusCode(500, new ResultViewModel<List<Category>>("Erro 05XE3: Falha interna no servidor"));
             }
         }
 
@@ -79,11 +83,14 @@ namespace Blog.Controllers
             [FromBody] EditorCategoryViewModel model,
             [FromServices] BlogDataContext context)
         {
+            if (!ModelState.IsValid)
+                return BadRequest();
+
             try { 
                 var category = context.Categories.First(x => x.Id == id);
 
                 if (category == null)
-                return NotFound();
+                return NotFound(new ResultViewModel<Category>("Conteúdo não encontrado"));
 
                 category.Name = model.Name;
                 category.Slug  = model.Slug;
@@ -91,15 +98,15 @@ namespace Blog.Controllers
                 context.Categories.Update(category);
                 await context.SaveChangesAsync();
 
-                return Ok(model);
+                return Ok(new ResultViewModel<Category>(category));
             }
-            catch (DbUpdateException ex)
+            catch (DbUpdateException)
             {
-                return StatusCode(500, @"Erro 05XE2: Não foi possível alterar a categoria.");
+                return StatusCode(500, new ResultViewModel<List<Category>>("Erro 05XE2: Não foi possível alterar a categoria."));
             }
-            catch (Exception ex)
+            catch
             {
-                return StatusCode(500, "Erro 05XE4: Falha interna no servidor");
+                return StatusCode(500, new ResultViewModel<List<Category>>("Erro 05XE4: Falha interna no servidor"));
             }
         }
 
@@ -119,13 +126,13 @@ namespace Blog.Controllers
 
                 return Ok(category);
             }
-            catch (DbUpdateException ex)
+            catch (DbUpdateException)
             {
-                return StatusCode(500, @"Erro 05XE3: Não foi possível excluir a categoria.");
+                return StatusCode(500, new ResultViewModel<List<Category>>("Erro 05XE3: Não foi possível excluir a categoria."));
             }
-            catch (Exception ex)
+            catch
             {
-                return StatusCode(500, "Erro 05XE5: Falha interna no servidor");
+                return StatusCode(500, new ResultViewModel<List<Category>>("Erro 05XE5: Falha interna no servidor"));
             }
         }
     }
