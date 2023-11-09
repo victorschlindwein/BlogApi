@@ -1,5 +1,6 @@
 ﻿using Blog.Data;
 using Blog.Models;
+using Blog.ViewModels;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -46,15 +47,21 @@ namespace Blog.Controllers
 
         [HttpPost("v1/categories")]
         public async Task<IActionResult> PostAsync(
-            [FromBody] Category model,
+            [FromBody] EditorCategoryViewModel model,
             [FromServices] BlogDataContext context)
         {
             try
             {
-                await context.Categories.AddAsync(model);
+                var category = new Category
+                {
+                    Name = model.Name,
+                    Slug = model.Slug.ToLower(),
+                };
+
+                await context.Categories.AddAsync(category);
                 await context.SaveChangesAsync();
 
-                return Created($"v1/categories/{model.Id}", model);
+                return Created($"v1/categories/{category.Id}", model);
             }
             catch (DbUpdateException ex)
             {
@@ -69,22 +76,22 @@ namespace Blog.Controllers
         [HttpPut("v1/categories/{id:int}")]
         public async Task<IActionResult> PutAsync(
             [FromRoute] int id,
-            [FromBody] Category model,
+            [FromBody] EditorCategoryViewModel model,
             [FromServices] BlogDataContext context)
         {
             try { 
-            var category = context.Categories.First(x => x.Id == id);
+                var category = context.Categories.First(x => x.Id == id);
 
-            if (category == null)
+                if (category == null)
                 return NotFound();
 
-            category.Name = model.Name;
-            category.Slug  = model.Slug;
+                category.Name = model.Name;
+                category.Slug  = model.Slug;
 
-            context.Categories.Update(category);
-            await context.SaveChangesAsync();
+                context.Categories.Update(category);
+                await context.SaveChangesAsync();
 
-            return Ok(model);
+                return Ok(model);
             }
             catch (DbUpdateException ex)
             {
@@ -102,15 +109,15 @@ namespace Blog.Controllers
                 [FromServices] BlogDataContext context)
         {
             try { 
-            var category = context.Categories.First(x => x.Id == id);
+                var category = context.Categories.First(x => x.Id == id);
 
-            if (category == null)
-                return NotFound();
+                if (category == null)
+                    return NotFound();
 
-            context.Categories.Remove(category);
-            await context.SaveChangesAsync();
+                context.Categories.Remove(category);
+                await context.SaveChangesAsync();
 
-            return Ok(category);
+                return Ok(category);
             }
             catch (DbUpdateException ex)
             {
