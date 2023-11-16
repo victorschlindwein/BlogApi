@@ -8,7 +8,6 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SecureIdentity.Password;
-using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 
 namespace Blog.Controllers
@@ -18,11 +17,11 @@ namespace Blog.Controllers
     {
         [HttpPost("v1/accounts/")]
         public async Task<IActionResult> Post(
-            [FromBody]RegisterViewModel model,
-            [FromServices]EmailService emailService,
-            [FromServices]BlogDataContext context)
+            [FromBody] RegisterViewModel model,
+            [FromServices] EmailService emailService,
+            [FromServices] BlogDataContext context)
         {
-            if(!ModelState.IsValid)
+            if (!ModelState.IsValid)
                 return BadRequest(new ResultViewModel<string>(ModelState.GetErrors()));
 
             var user = new User
@@ -42,10 +41,10 @@ namespace Blog.Controllers
 
                 emailService.Send(
                     user.Name,
-                    user.Email, 
-                    "Bem vindo ao Vitão Blog!", 
+                    user.Email,
+                    "Bem vindo ao Vitão Blog!",
                     $"Olá {user.Name}! Seja bem vindo ao Vitão Blog! Sua senha de acesso é: <strong>{password}</strong>");
-     
+
                 return Ok(new ResultViewModel<dynamic>(new
                 {
                     user = user.Email
@@ -59,9 +58,9 @@ namespace Blog.Controllers
 
         [HttpPost("v1/accounts/login")]
         public async Task<IActionResult> Login(
-            [FromBody]LoginViewModel model,
-            [FromServices]BlogDataContext context,
-            [FromServices]TokenService tokenService)
+            [FromBody] LoginViewModel model,
+            [FromServices] BlogDataContext context,
+            [FromServices] TokenService tokenService)
         {
             if (!ModelState.IsValid)
                 return BadRequest(new ResultViewModel<string>(ModelState.GetErrors()));
@@ -87,14 +86,14 @@ namespace Blog.Controllers
             {
                 return StatusCode(500, new ResultViewModel<string>("05X04 - Falha interna do servidor"));
             }
-            
+
         }
 
         [Authorize]
         [HttpPost("v1/accounts/upload-image")]
         public async Task<IActionResult> UploadImage(
-            [FromBody]UploadImageViewModel model,
-            [FromServices]BlogDataContext context)
+            [FromBody] UploadImageViewModel model,
+            [FromServices] BlogDataContext context)
         {
             var fileName = $"{Guid.NewGuid().ToString()}.jpg";
             var data = new Regex(@"^data:image\/[a-z]+;base64,").

@@ -15,7 +15,7 @@ namespace Blog.Controllers
         [HttpGet("v1/categories")]
         public async Task<IActionResult> GetAsync(
             [FromServices] IMemoryCache cache,
-            [FromServices]BlogDataContext context)
+            [FromServices] BlogDataContext context)
         {
             try
             {
@@ -32,7 +32,7 @@ namespace Blog.Controllers
                 return StatusCode(500, new ResultViewModel<List<Category>>("Erro 05XE1: Falha interna no servidor"));
             }
         }
-        
+
         private List<Category> GetCategories(BlogDataContext context)
         {
             return context.Categories.ToList();
@@ -63,7 +63,7 @@ namespace Blog.Controllers
             [FromBody] EditorCategoryViewModel model,
             [FromServices] BlogDataContext context)
         {
-            if(!ModelState.IsValid)
+            if (!ModelState.IsValid)
                 return BadRequest(new ResultViewModel<Category>(ModelState.GetErrors()));
 
             try
@@ -98,14 +98,15 @@ namespace Blog.Controllers
             if (!ModelState.IsValid)
                 return BadRequest();
 
-            try { 
+            try
+            {
                 var category = context.Categories.First(x => x.Id == id);
 
                 if (category == null)
-                return NotFound(new ResultViewModel<Category>("Conteúdo não encontrado"));
+                    return NotFound(new ResultViewModel<Category>("Conteúdo não encontrado"));
 
                 category.Name = model.Name;
-                category.Slug  = model.Slug;
+                category.Slug = model.Slug;
 
                 context.Categories.Update(category);
                 await context.SaveChangesAsync();
@@ -127,7 +128,8 @@ namespace Blog.Controllers
                 [FromRoute] int id,
                 [FromServices] BlogDataContext context)
         {
-            try { 
+            try
+            {
                 var category = context.Categories.First(x => x.Id == id);
 
                 if (category == null)

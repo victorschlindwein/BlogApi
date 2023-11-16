@@ -116,8 +116,9 @@ namespace Blog.Controllers
                     pageSize,
                     posts
                 }));
-            } catch 
-            { 
+            }
+            catch
+            {
                 return StatusCode(500, new ResultViewModel<List<Post>>("05X04 - Falha interna do servidor"));
             }
         }

@@ -1,6 +1,5 @@
 ﻿using System.Net;
 using System.Net.Mail;
-using System.Security.AccessControl;
 
 namespace Blog.Services
 {
@@ -34,9 +33,9 @@ namespace Blog.Services
                 smtpClient.Send(mail);
                 return true;
             }
-            catch 
-            { 
-                return false; 
+            catch
+            {
+                return false;
             }
         }
     }
