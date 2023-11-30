@@ -13,6 +13,7 @@ namespace Blog.Models
         public string Slug { get; set; }
         public string Bio { get; set; }
 
+        [JsonIgnore]
         public IList<Post> Posts { get; set; }
         public IList<Role> Roles { get; set; }
     }

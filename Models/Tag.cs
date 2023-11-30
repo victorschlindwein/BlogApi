@@ -1,3 +1,5 @@
+using System.Text.Json.Serialization;
+
 namespace Blog.Models
 {
     public class Tag
@@ -6,6 +8,7 @@ namespace Blog.Models
         public string Name { get; set; }
         public string Slug { get; set; }
 
+        [JsonIgnore]
         public List<Post> Posts { get; set; }
     }
 }

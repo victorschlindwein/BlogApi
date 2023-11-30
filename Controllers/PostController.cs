@@ -1,5 +1,4 @@
 ﻿using Blog.Data;
-using Blog.Data.Mappings;
 using Blog.Extensions;
 using Blog.Models;
 using Blog.ViewModels;
@@ -92,11 +91,16 @@ namespace Blog.Controllers
                 return BadRequest(new ResultViewModel<Post>(ModelState.GetErrors()));
 
             var email = User.Identity.Name;
-            
+
             try
             {
+                var category = await context.Categories.FirstOrDefaultAsync(x => x.Name == model.CategoryName);
                 var authorInfo = await context.Users.AsNoTracking().FirstOrDefaultAsync(x => x.Email == email);
-                var categoryInfo = await context.Categories.AsNoTracking().Where(x => x.Name == model.CategoryName).FirstOrDefaultAsync();
+                if (authorInfo == null)
+                {
+                    return StatusCode(400, "05X04 - Falha interna do servidor");
+                }
+
                 var tags = await GetOrCreateTagsAsync(context, model.Tags);
 
                 var newPost = new Post
@@ -105,20 +109,21 @@ namespace Blog.Controllers
                     Summary = model.Summary,
                     Body = model.Body,
                     Slug = model.Title.Replace(" ", "-"),
+                    Category = category,
                     CreateDate = DateTime.UtcNow.Date,
                     LastUpdateDate = DateTime.UtcNow.Date,
-                    Author = authorInfo
+                    Author = authorInfo,
+                    Tags = tags
                 };
 
-                newPost.Tags = tags;
-
+                context.Users.Attach(authorInfo);
                 await context.Posts.AddAsync(newPost);
                 await context.SaveChangesAsync();
 
                 return Ok(newPost);
             }
             catch (Exception ex)
-            { 
+            {
                 return BadRequest(ex.Message);
             }
         }
