@@ -28,14 +28,15 @@ Controle de autenticação e autorização JWT através do Microsoft Identity.
 - POST: v1/posts/create => cria um novo post
 - GET: v1/posts/category/{category} => busca posts por categoria
 
-
-## Como executar
-
-Para executar o projeto basta clonar o repositório e executar um `dotnet run` na raiz do projeto.  
-
 # IMPORTANTE: 
 Você DEVE preencher o arquivo `appsettings.json` com as informações do SEU ambiente. Caso contrário, a aplicação não irá executar.
 
 Esse projeto utiliza o envio de emails com a senha para os usuários conseguirem gerar o token de acesso JWT. Portanto, é necessário configurar o envio de email no `appsettings.json` e/ou alterar o código para que exiba a senha na resposta da requisição.
 
 Outras configurações também são obrigatórias para o bom funcionamento, como connection string e jwt key.
+
+## Como executar
+
+1. Realizar as configurações obrigatórias no `appsettings.json`
+2. Executar as migrations no banco de dados: `dotnet ef database update`
+3. Iniciar a aplicação através do Visual Studio ou `dotnet run` na raiz do projeto.
