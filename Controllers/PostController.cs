@@ -1,7 +1,10 @@
 ﻿using Blog.Data;
+using Blog.Data.Mappings;
+using Blog.Extensions;
 using Blog.Models;
 using Blog.ViewModels;
 using Blog.ViewModels.Posts;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -77,6 +80,68 @@ namespace Blog.Controllers
             {
                 return StatusCode(500, new ResultViewModel<List<Post>>("05X04 - Falha interna do servidor"));
             }
+        }
+
+        [Authorize]
+        [HttpPost("v1/posts/create")]
+        public async Task<IActionResult> CreateNewPost(
+        [FromBody] CreatePostViewModel model,
+        [FromServices] BlogDataContext context)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(new ResultViewModel<Post>(ModelState.GetErrors()));
+
+            var email = User.Identity.Name;
+            
+            try
+            {
+                var authorInfo = await context.Users.AsNoTracking().FirstOrDefaultAsync(x => x.Email == email);
+                var categoryInfo = await context.Categories.AsNoTracking().Where(x => x.Name == model.CategoryName).FirstOrDefaultAsync();
+                var tags = await GetOrCreateTagsAsync(context, model.Tags);
+
+                var newPost = new Post
+                {
+                    Title = model.Title,
+                    Summary = model.Summary,
+                    Body = model.Body,
+                    Slug = model.Title.Replace(" ", "-"),
+                    CreateDate = DateTime.UtcNow.Date,
+                    LastUpdateDate = DateTime.UtcNow.Date,
+                    Author = authorInfo
+                };
+
+                newPost.Tags = tags;
+
+                await context.Posts.AddAsync(newPost);
+                await context.SaveChangesAsync();
+
+                return Ok(newPost);
+            }
+            catch (Exception ex)
+            { 
+                return BadRequest(ex.Message);
+            }
+        }
+
+        private async Task<List<Tag>> GetOrCreateTagsAsync(BlogDataContext context, List<string> tagNames)
+        {
+            var tags = new List<Tag>();
+            foreach (var tagName in tagNames)
+            {
+                var tag = await context.Set<Tag>().FirstOrDefaultAsync(x => x.Name == tagName);
+                if (tag == null)
+                {
+                    tag = new Tag
+                    {
+                        Name = tagName,
+                        Slug = tagName.ToLower()
+                    };
+
+                    context.Set<Tag>().Add(tag);
+                }
+                tags.Add(tag);
+            }
+            return tags;
         }
 
         [HttpGet("v1/posts/category/{category}")]
